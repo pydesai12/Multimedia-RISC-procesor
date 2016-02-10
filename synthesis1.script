@@ -1,0 +1,30 @@
+set link_library {/apps/toshiba/sjsu/synopsys/tc240c/tc240c.db_NOMIN25 /apps/synopsys/SYNTH/libraries/syn/dw02.sldb /apps/synopsys/SYNTH/libraries/syn/dw01.sldb }
+set target_library {/apps/toshiba/sjsu/synopsys/tc240c/tc240c.db_NOMIN25}
+read_verilog top.v
+current_design top
+set_drive 0 clk
+set_drive 0 reset
+set_dont_touch_network clk
+create_clock clk -name clk -period 10.000000000
+set_propagated_clock clk
+set_clock_uncertainty 0.25 clk
+set_propagated_clock clk
+set_output_delay 0.5 -clock clk [all_outputs]
+set all_inputs_wo_rst_clk [remove_from_collection [remove_from_collection [all_inputs] [get_port clk]] [get_port reset]]
+set_driving_cell -lib_cell CND2X1 $all_inputs_wo_rst_clk
+set_input_delay 0.5 -clock clk $all_inputs_wo_rst_clk
+set_max_delay 5.0 -to [all_outputs]
+set_max_delay 5.0 -from $all_inputs_wo_rst_clk
+set_fix_hold [ get_clocks clk ]
+compile -map_effort high -incremental_mapping 
+create_clock clk -name clk -period 10.000000000
+set_propagated_clock clk
+set_clock_uncertainty 0.25 clk
+set_propagated_clock clk
+update_timing
+report -cell
+report_timing -max_paths 5
+report_area 
+report_power
+write -hierarchy -format verilog -output top_netlist.v
+quit
